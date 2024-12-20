@@ -1,32 +1,25 @@
-import * as XLSX from "xlsx";
+import dotenv from "dotenv";
 
-async function fetchExcelData(url) {
-  try {
-    // Fetch the Excel file
-    const response = await fetch(url);
-    const arrayBuffer = await response.arrayBuffer();
+dotenv.config(); // Load environment variables from .env
 
-    // Parse the file using SheetJS
-    const workbook = XLSX.read(arrayBuffer, { type: "array" });
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
 
-    // Convert all sheets to JSON
-    const allSheets = {};
-    workbook.SheetNames.forEach((sheetName) => {
-      const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: null }); // `defval: null` ensures empty cells are null
-      allSheets[sheetName] = sheetData;
-    });
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-    return allSheets;
-  } catch (error) {
-    console.error("Error fetching or parsing Excel file:", error);
-    return null;
+async function fetchData() {
+  const { data, error, status, statusText } = await supabase.from("inflationData").select("*");
+
+  if (error) {
+    console.error("Error:", error.message);
+    console.error("Status:", status, "Status Text:", statusText);
+    return;
   }
+
+  console.log("Data fetched successfully");
+
+  process.stdout.write(JSON.stringify(data || [], null, 2));
+  
 }
 
-// Example Usage
-const googleSheetUrl =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vS0HGVsH4E-Bmd8NTH5JFmXfYpoqo6gxfxX9SOK9IDnqrL-EW1QdDwS4DR7vVF1v9xVDerZ9GXeguYV/pub?output=xlsx";
-
-fetchExcelData(googleSheetUrl).then((allSheets) => {
-  process.stdout.write(allSheets);
-});
+fetchData();
