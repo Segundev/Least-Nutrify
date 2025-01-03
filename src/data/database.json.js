@@ -1,9 +1,10 @@
-import dotenv from "dotenv";
+import { config } from "../config/supabase.js";
+import { createClient } from "@supabase/supabase-js";
 
-dotenv.config(); // Load environment variables from .env
+// Load environment variables from .env
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseUrl = config.SUPABASE_URL;
+const supabaseKey = config.SUPABASE_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -15,8 +16,6 @@ async function fetchData() {
     console.error("Status:", status, "Status Text:", statusText);
     return;
   }
-
-  console.log("Data fetched successfully");
 
   process.stdout.write(JSON.stringify(data || [], null, 2));
   
